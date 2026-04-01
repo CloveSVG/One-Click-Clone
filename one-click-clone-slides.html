@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>One-Click Clone - AI 网站复刻工具</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* ===========================================
+           THEME: Dark Tech / Neon Glow
+           =========================================== */
+        :root {
+            --bg-primary: #050510;
+            --bg-secondary: #0a0a1a;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --text-primary: #f0f0f5;
+            --text-secondary: rgba(255, 255, 255, 0.5);
+            --accent: #00d4ff;
+            --accent-2: #a855f7;
+            --accent-3: #22d3ee;
+            --accent-glow: rgba(0, 212, 255, 0.15);
+            --accent-glow-2: rgba(168, 85, 247, 0.15);
+            --gradient-accent: linear-gradient(135deg, #00d4ff, #a855f7);
+
+            --font-display: 'Inter', -apple-system, sans-serif;
+            --font-body: 'Inter', -apple-system, sans-serif;
+
+            --title-size: clamp(1.8rem, 5vw, 3.5rem);
+            --h2-size: clamp(1.3rem, 3.5vw, 2.2rem);
+            --h3-size: clamp(1rem, 2.5vw, 1.5rem);
+            --body-size: clamp(0.8rem, 1.5vw, 1.1rem);
+            --small-size: clamp(0.7rem, 1.2vw, 0.9rem);
+            --slide-padding: clamp(2rem, 5vw, 5rem);
+            --content-gap: clamp(0.8rem, 2vw, 1.5rem);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html {
+            height: 100%;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        /* ===========================================
+           SLIDE BASE
+           =========================================== */
+        .slide {
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+            scroll-snap-align: start;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            padding: var(--slide-padding);
+        }
+
+        .slide-content {
+            max-width: 900px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: var(--content-gap);
+            z-index: 2;
+        }
+
+        /* ===========================================
+           BACKGROUNDS
+           =========================================== */
+        .bg-mesh::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 20% 50%, var(--accent-glow) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, var(--accent-glow-2) 0%, transparent 50%);
+            z-index: 0;
+        }
+
+        .bg-grid::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+            z-index: 0;
+        }
+
+        .bg-glow-bottom::after {
+            content: '';
+            position: absolute;
+            bottom: -50%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120%;
+            height: 100%;
+            background: radial-gradient(ellipse, var(--accent-glow) 0%, transparent 60%);
+            z-index: 0;
+        }
+
+        /* ===========================================
+           TYPOGRAPHY
+           =========================================== */
+        .slide-tag {
+            font-size: var(--small-size);
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-weight: 600;
+        }
+
+        .slide-title {
+            font-size: var(--title-size);
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+        }
+
+        .slide-title .gradient {
+            background: var(--gradient-accent);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .slide-subtitle {
+            font-size: var(--h3-size);
+            color: var(--text-secondary);
+            font-weight: 400;
+            line-height: 1.5;
+        }
+
+        h2 {
+            font-size: var(--h2-size);
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .body-text {
+            font-size: var(--body-size);
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        /* ===========================================
+           COMPONENTS
+           =========================================== */
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 100px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.03);
+            font-size: var(--small-size);
+            color: var(--text-secondary);
+            width: fit-content;
+        }
+
+        .pill .dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 8px var(--accent);
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+            gap: clamp(0.5rem, 1.5vw, 1rem);
+        }
+
+        .feature-card {
+            padding: clamp(1rem, 2vw, 1.5rem);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.06);
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+        }
+
+        .feature-card .icon {
+            font-size: clamp(1.2rem, 2vw, 1.5rem);
+            margin-bottom: 8px;
+        }
+
+        .feature-card h3 {
+            font-size: var(--body-size);
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .feature-card p {
+            font-size: var(--small-size);
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .step-list {
+            display: flex;
+            flex-direction: column;
+            gap: clamp(0.6rem, 1.5vw, 1rem);
+        }
+
+        .step {
+            display: flex;
+            align-items: flex-start;
+            gap: clamp(0.6rem, 1.5vw, 1rem);
+        }
+
+        .step-num {
+            flex-shrink: 0;
+            width: clamp(28px, 3vw, 36px);
+            height: clamp(28px, 3vw, 36px);
+            border-radius: 50%;
+            background: var(--gradient-accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--small-size);
+            font-weight: 700;
+            color: #000;
+        }
+
+        .step-text h3 {
+            font-size: var(--body-size);
+            font-weight: 600;
+        }
+
+        .step-text p {
+            font-size: var(--small-size);
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .quote-box {
+            padding: clamp(1.2rem, 3vw, 2rem);
+            border-left: 3px solid var(--accent);
+            background: var(--bg-card);
+            border-radius: 0 12px 12px 0;
+        }
+
+        .quote-box p {
+            font-size: var(--body-size);
+            line-height: 1.7;
+            color: var(--text-primary);
+            font-style: italic;
+        }
+
+        .cta-box {
+            text-align: center;
+            padding: clamp(1.5rem, 3vw, 2.5rem);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: linear-gradient(135deg, rgba(0,212,255,0.05), rgba(168,85,247,0.05));
+        }
+
+        .cta-box .emoji {
+            font-size: clamp(1.5rem, 3vw, 2.5rem);
+            margin-bottom: 0.5rem;
+        }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(1rem, 2vw, 2rem);
+        }
+
+        @media (max-width: 700px) {
+            .two-col { grid-template-columns: 1fr; }
+        }
+
+        /* ===========================================
+           ANIMATIONS
+           =========================================== */
+        .reveal {
+            opacity: 0;
+            transform: translateY(25px);
+            transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+                        transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .slide.visible .reveal {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .reveal:nth-child(1) { transition-delay: 0.05s; }
+        .reveal:nth-child(2) { transition-delay: 0.15s; }
+        .reveal:nth-child(3) { transition-delay: 0.25s; }
+        .reveal:nth-child(4) { transition-delay: 0.35s; }
+        .reveal:nth-child(5) { transition-delay: 0.45s; }
+
+        /* ===========================================
+           NAV DOTS
+           =========================================== */
+        .nav-dots {
+            position: fixed;
+            right: clamp(12px, 2vw, 24px);
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 100;
+        }
+
+        .nav-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.15);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            padding: 0;
+        }
+
+        .nav-dot.active {
+            background: var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+            transform: scale(1.3);
+        }
+
+        /* Progress bar */
+        .progress {
+            position: fixed;
+            top: 0; left: 0;
+            height: 2px;
+            background: var(--gradient-accent);
+            z-index: 100;
+            transition: width 0.3s;
+        }
+
+        /* Slide counter */
+        .slide-counter {
+            position: fixed;
+            bottom: clamp(12px, 2vw, 24px);
+            right: clamp(12px, 2vw, 24px);
+            font-size: var(--small-size);
+            color: rgba(255,255,255,0.3);
+            z-index: 100;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* ===========================================
+           RESPONSIVE
+           =========================================== */
+        @media (max-height: 600px) {
+            :root {
+                --slide-padding: clamp(1rem, 3vw, 2rem);
+                --content-gap: clamp(0.4rem, 1vw, 0.8rem);
+                --title-size: clamp(1.3rem, 4vw, 2.2rem);
+            }
+            .nav-dots { display: none; }
+        }
+
+        @media (max-height: 500px) {
+            :root {
+                --slide-padding: clamp(0.8rem, 2vw, 1.5rem);
+                --title-size: clamp(1.1rem, 3.5vw, 1.8rem);
+                --body-size: clamp(0.65rem, 1vw, 0.85rem);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .reveal { transition: opacity 0.3s ease; transform: none; }
+            html { scroll-behavior: auto; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+<nav class="nav-dots" id="navDots"></nav>
+<div class="slide-counter" id="slideCounter"></div>
+
+<!-- ==========================================
+     SLIDE 1: TITLE
+     ========================================== -->
+<section class="slide bg-mesh bg-grid" id="s1">
+    <div class="slide-content" style="text-align: center; align-items: center;">
+        <div class="pill reveal"><span class="dot"></span>One-Click Clone</div>
+        <h1 class="slide-title reveal">
+            一行代码不用写<br>
+            <span class="gradient">AI 帮你复刻网站</span>
+        </h1>
+        <p class="slide-subtitle reveal">只要会讲中文，就能让 AI 高完成度复刻任何网站</p>
+    </div>
+</section>
+
+<!-- ==========================================
+     SLIDE 2: SHOW RESULT
+     ========================================== -->
+<section class="slide bg-mesh" id="s2">
+    <div class="slide-content">
+        <div class="slide-tag reveal">先看效果</div>
+        <h2 class="reveal">左边克隆版，右边原版</h2>
+        <p class="body-text reveal">直接刷新页面对比。整体布局、配色、动画效果，<br>大概能做到 <strong style="color: var(--accent);">70%~80%</strong> 的还原度。</p>
+        <div class="feature-grid reveal" style="margin-top: 0.5rem;">
+            <div class="feature-card">
+                <div class="icon">🎨</div>
+                <h3>不是静态壳子</h3>
+                <p>布局、配色、交互动效都能还原</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">📐</div>
+                <h3>像素级提取</h3>
+                <p>通过 getComputedStyle 读取精确 CSS</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">🎬</div>
+                <h3>视频也能搬</h3>
+                <p>图片、视频、字体全部下载到本地</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==========================================
+     SLIDE 3: USE CASES
+     ========================================== -->
+<section class="slide bg-grid" id="s3">
+    <div class="slide-content">
+        <div class="slide-tag reveal">不只是看着爽</div>
+        <h2 class="reveal">它能帮你做什么？</h2>
+        <div class="feature-grid reveal">
+            <div class="feature-card">
+                <div class="icon">📚</div>
+                <h3>建站学习</h3>
+                <p>看别人怎么做的，拆解学习最快</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">💡</div>
+                <h3>快速验证想法</h3>
+                <p>几分钟出一个可交互的 Demo</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">🤝</div>
+                <h3>给客户出 Demo</h3>
+                <p>先给客户看效果，效率翻倍</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==========================================
+     SLIDE 4: EVIDENCE
+     ========================================== -->
+<section class="slide bg-mesh" id="s4">
+    <div class="slide-content">
+        <div class="slide-tag reveal">不只测了一个</div>
+        <h2 class="reveal">多个网站验证，确认可用</h2>
+        <div class="step-list reveal">
+            <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-text">
+                    <h3>可灵 AI 开发者首页</h3>
+                    <p>kling.ai/dev — 完整 landing page，含视频、轮播、Tab 切换</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-text">
+                    <h3>Claude Code（Cowork）</h3>
+                    <p>claude.com/product/cowork — Anthropic 官方产品页</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-text">
+                    <h3>Linear</h3>
+                    <p>linear.app — 项目管理工具官网，设计精致</p>
+                </div>
+            </div>
+        </div>
+        <p class="body-text reveal" style="margin-top: 0.5rem;">不是碰巧对一个案例有效，而是真的有一定可用性了。</p>
+    </div>
+</section>
+
+<!-- ==========================================
+     SLIDE 5: HOW IT WORKS (PRINCIPLE)
+     ========================================== -->
+<section class="slide bg-grid" id="s5">
+    <div class="slide-content">
+        <div class="slide-tag reveal">原理</div>
+        <h2 class="reveal">让 AI 自己去<span class="gradient">「点、看、学」</span></h2>
+        <p class="body-text reveal">不是传统手写 HTML、手调样式的方式。</p>
+        <div class="feature-grid reveal">
+            <div class="feature-card">
+                <div class="icon">👁️</div>
+                <h3>多模态识别</h3>
+                <p>AI 主动识别布局、格式、设计模式、配色</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">🖱️</div>
+                <h3>浏览器控制</h3>
+                <p>自动打开网页、滚动、点击、读取样式</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">⚡</div>
+                <h3>并行生成</h3>
+                <p>多个 AI Agent 同时写不同区块的代码</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">🧠</div>
+                <h3>经验积累</h3>
+                <p>每次克隆后学习反馈，下次更好</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==========================================
+     SLIDE 6: 6 STEPS FLOW
+     ========================================== -->
+<section class="slide bg-mesh" id="s6">
+    <div class="slide-content">
+        <div class="slide-tag reveal">全自动流程</div>
+        <h2 class="reveal">你说一句话，AI 做完 6 步</h2>
+        <div class="step-list reveal">
+            <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-text"><h3>打开浏览器，访问目标网站</h3></div>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-text"><h3>下载所有图片、视频、字体到本地</h3></div>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-text"><h3>对每个元素提取精确 CSS 样式</h3></div>
+            </div>
+            <div class="step">
+                <div class="step-num">4</div>
+                <div class="step-text"><h3>拆分页面为独立区块</h3></div>
+            </div>
+            <div class="step">
+                <div class="step-num">5</div>
+                <div class="step-text"><h3>多个 Agent 并行编码</h3></div>
+            </div>
+            <div class="step">
+                <div class="step-num">6</div>
+                <div class="step-text"><h3>组装验证，逐屏对比原版</h3></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==========================================
+     SLIDE 7: LOW BARRIER
+     ========================================== -->
+<section class="slide bg-grid" id="s7">
+    <div class="slide-content" style="text-align: center; align-items: center;">
+        <div class="slide-tag reveal">门槛</div>
+        <h1 class="slide-title reveal" style="font-size: var(--h2-size);">
+            不需要会前端<br>
+            <span class="gradient">只要会说中文</span>
+        </h1>
+        <p class="body-text reveal" style="max-width: 500px;">
+            你不需要自己写一行代码。<br>
+            只要你会跟 AI 说清楚需求，<br>
+            就能把一个网站 Demo 跑起来。
+        </p>
+        <div class="pill reveal" style="margin-top: 0.5rem;"><span class="dot"></span>开源免费，评论区自取</div>
+    </div>
+</section>
+
+<!-- ==========================================
+     SLIDE 8: WHY OPEN SOURCE - REASON 1
+     ========================================== -->
+<section class="slide bg-mesh" id="s8">
+    <div class="slide-content">
+        <div class="slide-tag reveal">为什么开源 · 其一</div>
+        <h2 class="reveal">我的技术能力有限</h2>
+        <div class="quote-box reveal">
+            <p>虽然在很多官网类页面上已经适配得比较成熟，也证明了可用性，但在更多场景里的适配和测试还远远不够。</p>
+        </div>
+        <p class="body-text reveal">所以更希望开源出来，让更多人一起完善、扩展、<br>推到更多场景里去。</p>
+    </div>
+</section>
+
+<!-- ==========================================
+     SLIDE 9: WHY OPEN SOURCE - REASON 2
+     ========================================== -->
+<section class="slide bg-grid" id="s9">
+    <div class="slide-content">
+        <div class="slide-tag reveal">为什么开源 · 其二</div>
+        <h2 class="reveal">这是我的个人兴趣项目</h2>
+        <div class="quote-box reveal">
+            <p>这一周从 0 到 1 做出来，熬了很多夜，也掉了不少头发。收到很多私信和评论区的鼓励，已经很满足了。</p>
+        </div>
+        <p class="body-text reveal">我不打算靠它赚钱。<br>但我真的希望有人能基于它，做出更有意思、甚至能商业化的产品。</p>
+        <p class="body-text reveal" style="color: var(--accent);">真正帮别人创造价值，甚至赚到钱 — 那就特别有意义。</p>
+    </div>
+</section>
+
+<!-- ==========================================
+     SLIDE 10: FOR OTHER AI TOOLS
+     ========================================== -->
+<section class="slide bg-mesh" id="s10">
+    <div class="slide-content">
+        <div class="slide-tag reveal">开放模式</div>
+        <h2 class="reveal">这是一个<span class="gradient">框架和模式</span></h2>
+        <p class="body-text reveal">Claude Code 已经完整支持。其他 AI 工具也可以直接复用这套方法论。</p>
+        <div class="feature-grid reveal">
+            <div class="feature-card">
+                <div class="icon">📋</div>
+                <h3>600+ 行方法论</h3>
+                <p>结构化的 SKILL.md，教 AI 如何克隆网站</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">🔄</div>
+                <h3>可复制可改造</h3>
+                <p>喂给任何有浏览器控制能力的 AI</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">📈</div>
+                <h3>会越来越好</h3>
+                <p>内置经验积累系统，每次克隆质量更高</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==========================================
+     SLIDE 11: NEXT EPISODE TEASE
+     ========================================== -->
+<section class="slide bg-grid" id="s11">
+    <div class="slide-content" style="text-align: center; align-items: center;">
+        <div class="slide-tag reveal">下期预告</div>
+        <h2 class="reveal">硅谷氛围编程人的<br><span class="gradient">AI 账单 & 工具合集</span></h2>
+        <p class="body-text reveal" style="max-width: 450px;">
+            每个月 AI 花多少钱？<br>
+            平时最常用的 AI 工具有哪些？<br>
+            这个话题你们感兴趣吗？
+        </p>
+    </div>
+</section>
+
+<!-- ==========================================
+     SLIDE 12: CLOSING
+     ========================================== -->
+<section class="slide bg-mesh bg-glow-bottom" id="s12">
+    <div class="slide-content" style="text-align: center; align-items: center;">
+        <div class="cta-box reveal">
+            <div class="emoji">🚀</div>
+            <h2 style="margin-bottom: 0.5rem;">点赞 · 收藏 · 评论</h2>
+            <p class="body-text">这是我继续更新最大的动力</p>
+        </div>
+        <p class="reveal" style="font-size: var(--body-size); color: var(--text-secondary); margin-top: 1rem;">
+            GitHub 评论区自取 · 开源免费 · MIT License
+        </p>
+        <p class="reveal" style="font-size: var(--h3-size); font-weight: 600; margin-top: 0.5rem;">
+            谢谢大家 ❤️ 感谢 1000 粉
+        </p>
+        <div class="pill reveal" style="margin-top: 0.5rem;"><span class="dot"></span>Powered by Clove 深思圈</div>
+    </div>
+</section>
+
+<script>
+    /* ===========================================
+       SLIDE CONTROLLER
+       =========================================== */
+    class SlidePresentation {
+        constructor() {
+            this.slides = document.querySelectorAll('.slide');
+            this.total = this.slides.length;
+            this.current = 0;
+            this.isScrolling = false;
+
+            this.createNavDots();
+            this.setupObserver();
+            this.setupKeyboard();
+            this.updateCounter();
+        }
+
+        createNavDots() {
+            const nav = document.getElementById('navDots');
+            this.slides.forEach((_, i) => {
+                const dot = document.createElement('button');
+                dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+                dot.addEventListener('click', () => this.slides[i].scrollIntoView({ behavior: 'smooth' }));
+                nav.appendChild(dot);
+            });
+            this.dots = nav.querySelectorAll('.nav-dot');
+        }
+
+        setupObserver() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        const index = [...this.slides].indexOf(entry.target);
+                        this.current = index;
+                        this.updateDots();
+                        this.updateProgress();
+                        this.updateCounter();
+                    }
+                });
+            }, { threshold: 0.5 });
+
+            this.slides.forEach(slide => observer.observe(slide));
+        }
+
+        setupKeyboard() {
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ') {
+                    e.preventDefault();
+                    if (this.current < this.total - 1) {
+                        this.slides[this.current + 1].scrollIntoView({ behavior: 'smooth' });
+                    }
+                } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    if (this.current > 0) {
+                        this.slides[this.current - 1].scrollIntoView({ behavior: 'smooth' });
+                    }
+                }
+            });
+        }
+
+        updateDots() {
+            this.dots.forEach((dot, i) => dot.classList.toggle('active', i === this.current));
+        }
+
+        updateProgress() {
+            const pct = ((this.current + 1) / this.total) * 100;
+            document.getElementById('progress').style.width = pct + '%';
+        }
+
+        updateCounter() {
+            document.getElementById('slideCounter').textContent =
+                String(this.current + 1).padStart(2, '0') + ' / ' + String(this.total).padStart(2, '0');
+        }
+    }
+
+    new SlidePresentation();
+</script>
+
+</body>
+</html>
