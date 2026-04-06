@@ -14,9 +14,25 @@ One-Click Clone is an open-source AI skill that lets you replicate any website w
 
 ### See It In Action
 
+#### Kling AI Developer Page
+
 > Left: Clone | Right: Original
 
 ![Kling AI comparison](docs/demo-screenshots/showcase-kling.png)
+
+#### Vercel.com Homepage
+
+> Left: Original | Right: AI Clone
+
+![Vercel comparison](docs/demo-screenshots/showcase-vercel.png)
+
+#### Gemini Nano Banana 2
+
+> Left: Original | Right: AI Clone
+
+![Gemini comparison 1](docs/demo-screenshots/showcase-gemini-1.png)
+![Gemini comparison 2](docs/demo-screenshots/showcase-gemini-2.png)
+![Gemini comparison 3](docs/demo-screenshots/showcase-gemini-3.png)
 
 We've tested on multiple sites — **Kling AI**, **Claude Cowork**, **Linear**, **Vercel**, **Gemini** — the methodology works across different design systems and frameworks.
 
@@ -96,9 +112,25 @@ One-Click Clone 是一个开源的 AI Skill。你只需要告诉 AI 你想复刻
 
 ### 先看效果
 
+#### 可灵 AI 开发者首页
+
 > 左：克隆版 ｜ 右：原版
 
 ![可灵 AI 对比](docs/demo-screenshots/showcase-kling.png)
+
+#### Vercel.com 首页
+
+> 左：原版 ｜ 右：AI 克隆版
+
+![Vercel 对比](docs/demo-screenshots/showcase-vercel.png)
+
+#### Gemini Nano Banana 2
+
+> 左：原版 ｜ 右：AI 克隆版
+
+![Gemini 对比 1](docs/demo-screenshots/showcase-gemini-1.png)
+![Gemini 对比 2](docs/demo-screenshots/showcase-gemini-2.png)
+![Gemini 对比 3](docs/demo-screenshots/showcase-gemini-3.png)
 
 不只测了一个网站。可灵 AI、Claude Code、Linear、Vercel、Gemini 都测过，效果都还不错。这套流程不是碰巧对一个案例有效，而是真的已经有一定可用性了。
 
